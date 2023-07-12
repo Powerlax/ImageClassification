@@ -6,7 +6,7 @@ import tensorflow_datasets as tfds
 import pathlib
 
 #get the dataset
-data = tf.keras.utils.get_file('flower_photos', origin='https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz', untar=True)
+data = tf.keras.utils.get_file('Images', origin='http://vision.stanford.edu/aditya86/ImageNetDogs/images.tar', untar=True)
 data = pathlib.Path(data)
 tds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='training', seed=123, image_size=(180,180))
 vds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='validation',seed=123, image_size=(180,180))
