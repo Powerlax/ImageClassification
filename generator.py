@@ -1,13 +1,10 @@
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-import PIL
-import tensorflow_datasets as tfds
 import pathlib
 
 #get the dataset
-#data = tf.keras.utils.get_file('Images', origin='http://vision.stanford.edu/aditya86/ImageNetDogs/images.tar', untar=True)
-data = tf.keras.utils.get_file('flower_photos', origin="https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz", untar=True)
+data = tf.keras.utils.get_file('Images', origin='http://vision.stanford.edu/aditya86/ImageNetDogs/images.tar', untar=True)
+#data = tf.keras.utils.get_file('flower_photos', origin="https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz", untar=True)
 data = pathlib.Path(data)
 tds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='training', seed=123, image_size=(180,180))
 vds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='validation',seed=123, image_size=(180,180))
@@ -53,7 +50,7 @@ model.summary()
 history=model.fit(tds, validation_data=vds, epochs=15)
 
 #predict
-sunflower_url = "https://www.highmowingseeds.com/media/catalog/product/cache/6cbdb003cf4aae33b9be8e6a6cf3d7ad/7/1/7111-1.jpg"
+sunflower_url = "https://cdn.britannica.com/16/234216-050-C66F8665/beagle-hound-dog.jpg"
 sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
 
 img = tf.keras.utils.load_img(
@@ -68,4 +65,7 @@ score = tf.nn.softmax(predictions[0])
 print(
     "This image most likely belongs to {} with a {:.2f} percent confidence.".format(names[np.argmax(score)], 100 * np.max(score))
 )
+
+#save model
+model.save('model/dogs')
 
