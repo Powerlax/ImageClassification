@@ -49,23 +49,6 @@ model.summary()
 #training
 history=model.fit(tds, validation_data=vds, epochs=15)
 
-#predict
-sunflower_url = "https://cdn.britannica.com/16/234216-050-C66F8665/beagle-hound-dog.jpg"
-sunflower_path = tf.keras.utils.get_file('Red_sunflower', origin=sunflower_url)
-
-img = tf.keras.utils.load_img(
-    sunflower_path, target_size=(180, 180)
-)
-img_array = tf.keras.utils.img_to_array(img)
-img_array = tf.expand_dims(img_array, 0) # Create a batch
-
-predictions = model.predict(img_array)
-score = tf.nn.softmax(predictions[0])
-
-print(
-    "This image most likely belongs to {} with a {:.2f} percent confidence.".format(names[np.argmax(score)], 100 * np.max(score))
-)
-
 #save model
 model.save('model/dogs')
 
