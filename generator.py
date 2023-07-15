@@ -6,49 +6,53 @@ import pathlib
 data = tf.keras.utils.get_file('Images', origin='http://vision.stanford.edu/aditya86/ImageNetDogs/images.tar', untar=True)
 #data = tf.keras.utils.get_file('flower_photos', origin="https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz", untar=True)
 data = pathlib.Path(data)
-tds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='training', seed=123, image_size=(180,180))
-vds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='validation',seed=123, image_size=(180,180))
+print(data)
+tds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='training', seed=123, image_size=(224,224))
+vds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='validation',seed=123, image_size=(224,224))
 names = tds.class_names
 num = len(names)
 
-#tune it using the autotune
-tuner = tf.data.AUTOTUNE
-tds = tds.cache().shuffle(1000).prefetch(buffer_size=tuner)
-vds = vds.cache().prefetch(buffer_size=tuner)
+def main():
+    #tune it using the autotune
+    tuner = tf.data.AUTOTUNE
+    tds = tds.cache().shuffle(1000).prefetch(buffer_size=tuner)
+    vds = vds.cache().prefetch(buffer_size=tuner)
 
-#add data augmentation for randomness
-data_aug = tf.keras.Sequential([
-    tf.keras.layers.RandomFlip("horizontal", input_shape=(180, 180,3)),
-    tf.keras.layers.RandomRotation(0.1),
-    tf.keras.layers.RandomZoom(0.1),
-  ]
-)
+    #add data augmentation for randomness
+    data_aug = tf.keras.Sequential([
+        tf.keras.layers.RandomFlip("horizontal", input_shape=(224, 224,3)),
+        tf.keras.layers.RandomRotation(0.2),
+        tf.keras.layers.RandomZoom(0.2),
+        tf.keras.layers.RandomContrast(0.2),
+        tf.keras.layers.RandomBrightness(0.2),
+        tf.keras.layers.RandomCrop(224, 224, 3),
+        tf.keras.layers.RandomTranslation(0.2, 0.2),
+        ]
+    )
 
-#build model
-model = tf.keras.Sequential([
-    data_aug,
-    tf.keras.layers.Rescaling(scale=1./255, input_shape=(180,180,3)),   #to rescale the 0, 255 value range down to 0, 1
-    tf.keras.layers.Conv2D(16, 3, padding='same', activation='relu'),   #first cnn with relu activiation function
-    tf.keras.layers.MaxPooling2D(), 
-    tf.keras.layers.Conv2D(32, 3, padding='same', activation='relu'),
-    tf.keras.layers.MaxPooling2D(), 
-    tf.keras.layers.Conv2D(64, 3, padding='same', activation='relu'),
-    tf.keras.layers.MaxPooling2D(), 
-    tf.keras.layers.Dropout(0.2),
-    tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(128, activation='relu'),                      #Standard Dense NN
-    tf.keras.layers.Dense(num)                                          #one neuron for each class
-])
 
-#compile using adam optimizer and crossentropy loss
-model.compile(optimizer='adam', loss=tf.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+    #build model
+    InceptionV3 = tf.keras.applications.InceptionV3(include_top= False, input_shape= (224, 224, 3), weights= 'imagenet')
+    for layer in InceptionV3.layers:
+       layer.trainable = False
 
-#summary of model
-model.summary()
+    model = tf.keras.Sequential([
+        data_aug,
+        InceptionV3,
+      tf.keras.layers.GlobalAveragePooling2D(), #global average pooling 
+      tf.keras.layers.Dropout(0.2),
+       tf.keras.layers.Dense(num, activation='softmax'),
+       tf.keras.layers.Dense(1, activation='softmax')
+    ])
 
-#training
-history=model.fit(tds, validation_data=vds, epochs=15)
+    #compile using adam optimizer and crossentropy loss
+    model.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.losses.CategoricalCrossentropy(), metrics=['accuracy'])
 
-#save model
-model.save('model/dogs')
+    #summary of model
+    model.summary()
 
+    #training
+    #model.fit(tds, validation_data=vds, epochs=30, verbose=2)     #uncomment for training
+
+    #save model
+    model.save('model/dogs')

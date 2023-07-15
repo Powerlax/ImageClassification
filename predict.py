@@ -1,14 +1,18 @@
 import tensorflow as tf
-from generator import names
+from generator import names, vds
+import numpy as np
 
-model = new_model = tf.keras.models.load_model('model/dogs', compile=True)
+#ValueError: Layer 'conv2d' expected 1 variables, but received 0 variables during loading. Expected: ['conv2d/kernel:0'] 
+#this came when loading the model
+#fix it 
+model = new_model = tf.keras.models.load_model('baseline_model.h5', compile=True)
 model.summary()
 
 def predict(url):
-    sunflower_path = tf.keras.utils.get_file('dog', origin=url)
+    sunflower_path = tf.keras.utils.get_file(origin=url)
 
     img = tf.keras.utils.load_img(
-        sunflower_path, target_size=(180, 180)
+        sunflower_path, target_size=(224, 224)
     )
     img_array = tf.keras.utils.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0)
@@ -16,8 +20,14 @@ def predict(url):
     print('yes')
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
+    print(names)
 
     print(
         "This image most likely belongs to {} with a {:.2f} percent confidence.".format(names[np.argmax(score)], 100 * np.max(score))
     )
-    
+
+cont = True
+while cont:
+    url = input("Enter image url: ")
+    predict(url)
+    cont = input("Continue? (y/n) ") == 'y'
