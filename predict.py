@@ -2,9 +2,6 @@ import tensorflow as tf
 from generator import names, vds
 import numpy as np
 
-#ValueError: Layer 'conv2d' expected 1 variables, but received 0 variables during loading. Expected: ['conv2d/kernel:0'] 
-#this came when loading the model
-#fix it 
 model = new_model = tf.keras.models.load_model('baseline_model.h5', compile=True)
 model.summary()
 
