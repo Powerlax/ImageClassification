@@ -55,6 +55,6 @@ def main(tds, vds):
     model.fit(tds, validation_data=vds, epochs=30)     #uncomment for training
 
     #save model
-    model.save('model/dogs')
+    model.save('baseline_model.h5')
 
 main(tds, vds)
