@@ -4,8 +4,6 @@ import pathlib
 
 
 #get the dataset
-#data = tf.keras.utils.get_file('PetImages', extract=True)
-#data = tf.keras.utils.get_file('flower_photos', origin="https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz", untar=True)
 data = pathlib.Path('C:/Users/innav_z3e3dq9/.keras/datasets/PetImages')
 print(data)
 tds = tf.keras.utils.image_dataset_from_directory(directory=data, validation_split=0.2, subset='training', seed=123, image_size=(224,224))
